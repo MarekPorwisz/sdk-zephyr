@@ -32,6 +32,7 @@ LOG_MODULE_REGISTER(net_l2_openthread, CONFIG_OPENTHREAD_L2_LOG_LEVEL);
 #include <openthread/joiner.h>
 #include <openthread-system.h>
 #include <openthread-config-generic.h>
+#include <openthread/udp.h>
 
 #include <platform-zephyr.h>
 
@@ -183,7 +184,6 @@ static void ot_state_changed_handler(uint32_t flags, void *context)
 static void ot_receive_handler(otMessage *aMessage, void *context)
 {
 	struct openthread_context *ot_context = context;
-
 	uint16_t offset = 0U;
 	uint16_t read_len;
 	struct net_pkt *pkt;
@@ -218,7 +218,7 @@ static void ot_receive_handler(otMessage *aMessage, void *context)
 		}
 	}
 
-	NET_DBG("Injecting Ip6 packet to Zephyr net stack");
+	NET_WARN("Injecting Ip6 packet to Zephyr net stack");
 
 	if (IS_ENABLED(CONFIG_OPENTHREAD_L2_DEBUG_DUMP_IPV6)) {
 		net_pkt_hexdump(pkt, "Received IPv6 packet");
@@ -454,7 +454,7 @@ static int openthread_init(struct net_if *iface)
 	if (IS_ENABLED(CONFIG_OPENTHREAD_COPROCESSOR)) {
 		otNcpInit(ot_context->instance);
 	} else {
-		otIp6SetReceiveFilterEnabled(ot_context->instance, true);
+		otIp6SetReceiveFullFilterEnabled(ot_context->instance, true);
 		otIp6SetReceiveCallback(ot_context->instance,
 					ot_receive_handler, ot_context);
 		otSetStateChangedCallback(ot_context->instance,
